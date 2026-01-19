@@ -2,11 +2,13 @@ package com.example.androidapp;
 
 import android.Manifest;
 import android.content.ContentValues;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.Toast;
 
 import androidx.activity.ComponentActivity;
@@ -31,11 +33,11 @@ public class MainActivity extends ComponentActivity {
     private PreviewView previewView;
     private Button btnCapture;
     private Button btnSwitch;
+    private ImageButton btnBack;
 
     private ImageCapture imageCapture = null;
     private CameraSelector cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA;
 
-    // Request camera permission
     private final ActivityResultLauncher<String> requestCamera =
             registerForActivityResult(new ActivityResultContracts.RequestPermission(), granted -> {
                 if (granted) {
@@ -54,8 +56,8 @@ public class MainActivity extends ComponentActivity {
         previewView = findViewById(R.id.previewView);
         btnCapture = findViewById(R.id.btnCapture);
         btnSwitch = findViewById(R.id.btnSwitch);
+        btnBack = findViewById(R.id.btnBack);
 
-        // Check and request permission
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
                 == PackageManager.PERMISSION_GRANTED) {
             startCamera();
@@ -63,16 +65,21 @@ public class MainActivity extends ComponentActivity {
             requestCamera.launch(Manifest.permission.CAMERA);
         }
 
-        // Capture image
         btnCapture.setOnClickListener(v -> takePhoto());
 
-        // Switch between front & back camera
         btnSwitch.setOnClickListener(v -> {
             cameraSelector =
                     (cameraSelector == CameraSelector.DEFAULT_BACK_CAMERA)
                             ? CameraSelector.DEFAULT_FRONT_CAMERA
                             : CameraSelector.DEFAULT_BACK_CAMERA;
             startCamera();
+        });
+
+
+        btnBack.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, HomeActivity.class);
+            startActivity(intent);
+            finish();
         });
     }
 

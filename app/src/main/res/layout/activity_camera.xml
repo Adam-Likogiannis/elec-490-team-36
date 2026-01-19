@@ -4,6 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+
     <androidx.camera.view.PreviewView
         android:id="@+id/previewView"
         android:layout_width="0dp"
@@ -12,7 +13,8 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toTopOf="@+id/bottomBar"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintEnd_toEndOf="parent" />
+
 
     <LinearLayout
         android:id="@+id/bottomBar"
@@ -25,20 +27,36 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
+
+        <ImageButton
+            android:id="@+id/btnBack"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginEnd="24dp"
+            android:background="@android:color/transparent"
+            android:padding="8dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/ic_back"
+            android:tint="@android:color/black"
+            android:contentDescription="@string/back_button" />
+
+
         <Button
             android:id="@+id/btnSwitch"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Front/Back" />
+            android:text="@string/change_camera" />
 
         <Space
             android:layout_width="24dp"
             android:layout_height="wrap_content" />
 
+
         <Button
             android:id="@+id/btnCapture"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Take a photo" />
+            android:text="@string/take_photo" />
     </LinearLayout>
+
 </androidx.constraintlayout.widget.ConstraintLayout>
