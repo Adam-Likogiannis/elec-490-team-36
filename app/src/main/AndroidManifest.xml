@@ -3,7 +3,11 @@
 
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
-    <uses-feature android:name="android.hardware.camera.any" android:required="false"/>
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <uses-feature
+        android:name="android.hardware.camera.any"
+        android:required="false"/>
 
     <application
         android:allowBackup="true"
@@ -13,7 +17,8 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AndroidApp">
 
-        <activity android:name=".HomeActivity"
+        <activity
+            android:name=".HomeActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -22,7 +27,7 @@
         </activity>
 
         <activity android:name=".MainActivity" />
-
+        <activity android:name=".UploadActivity" />
 
     </application>
 

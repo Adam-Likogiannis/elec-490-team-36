@@ -3,4 +3,10 @@
     <string name="back_button">Back</string>
     <string name="change_camera">Change Camera</string>
     <string name="take_photo">Take a photo</string>
+    <string name="back">Back</string>
+    <string name="username">Username</string>
+    <string name="upload_now">UPLOAD NOW</string>
+    <string name="label_time">Time: -</string>
+    <string name="label_address">Address: -</string>
+    <string name="label_username">Username: -</string>
 </resources>
