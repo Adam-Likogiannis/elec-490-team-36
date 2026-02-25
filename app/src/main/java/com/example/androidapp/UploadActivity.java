@@ -3,7 +3,6 @@ package com.example.androidapp;
 import android.location.Address;
 import android.location.Geocoder;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -17,6 +16,8 @@ import androidx.activity.ComponentActivity;
 import androidx.exifinterface.media.ExifInterface;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -36,20 +37,19 @@ import okhttp3.Response;
 
 public class UploadActivity extends ComponentActivity {
 
-    private static final String SERVER_UPLOAD_URL = "http://192.168.0.100:5000/upload";
+    private static final String SERVER_PROCESS_URL = "https://api.roadscript.studio/process";
 
     private ImageView imgPreview;
     private EditText etUsername;
     private Button btnUploadNow;
     private TextView tvStatus;
     private TextView tvCapturedTime;
-    private TextView tvAddress;
     private TextView tvUsername;
 
     private Uri imageUri;
 
     private String capturedTimeText = "-";
-    private String addressText = "No GPS info";
+    private String addressText = "Unknown";
 
     private final OkHttpClient client = new OkHttpClient();
     private final ExecutorService bg = Executors.newSingleThreadExecutor();
@@ -64,7 +64,6 @@ public class UploadActivity extends ComponentActivity {
         btnUploadNow = findViewById(R.id.btnUploadNow);
         tvStatus = findViewById(R.id.tvStatus);
         tvCapturedTime = findViewById(R.id.tvCapturedTime);
-        tvAddress = findViewById(R.id.tvAddress);
         tvUsername = findViewById(R.id.tvUsername);
 
         imageUri = getIntent().getData();
@@ -78,7 +77,6 @@ public class UploadActivity extends ComponentActivity {
 
         tvStatus.setText("");
         tvCapturedTime.setText("Time: -");
-        tvAddress.setText("Address: -");
         tvUsername.setText("Username: " + getUsername());
 
         etUsername.addTextChangedListener(new TextWatcher() {
@@ -107,18 +105,13 @@ public class UploadActivity extends ComponentActivity {
 
     private void loadMetadataAsync() {
         tvCapturedTime.setText("Time: Loading...");
-        tvAddress.setText("Address: Loading...");
 
         bg.execute(() -> {
-            String time = readExifTimeOrNow(imageUri);
-            String addr = readExifAddress(imageUri);
-
-            capturedTimeText = time;
-            addressText = addr;
+            capturedTimeText = readExifTimeOrNow(imageUri);
+            addressText = readExifAddress(imageUri);
 
             runOnUiThread(() -> {
                 tvCapturedTime.setText("Time: " + capturedTimeText);
-                tvAddress.setText("Address: " + addressText);
                 tvUsername.setText("Username: " + getUsername());
             });
         });
@@ -159,63 +152,120 @@ public class UploadActivity extends ComponentActivity {
     }
 
     private void uploadImage() {
-        String username = getUsername();
-        String device = String.format(Locale.US, "%s %s", Build.MANUFACTURER, Build.MODEL);
-        long timestampMillis = System.currentTimeMillis();
+        final String payload = getUsername();
 
         tvStatus.setText("Uploading...");
+        btnUploadNow.setEnabled(false);
 
-        byte[] imageBytes;
-        try {
-            imageBytes = readBytes(imageUri);
-        } catch (Exception e) {
-            tvStatus.setText("Failed to read image");
-            return;
-        }
-
-        RequestBody fileBody = RequestBody.create(imageBytes, MediaType.parse("image/*"));
-
-        MultipartBody requestBody = new MultipartBody.Builder()
-                .setType(MultipartBody.FORM)
-                .addFormDataPart("timestamp", String.valueOf(timestampMillis))
-                .addFormDataPart("captured_time", capturedTimeText)
-                .addFormDataPart("device", device)
-                .addFormDataPart("username", username)
-                .addFormDataPart("address", addressText)
-                .addFormDataPart("image", "upload.jpg", fileBody)
-                .build();
-
-        Request request = new Request.Builder()
-                .url(SERVER_UPLOAD_URL)
-                .post(requestBody)
-                .build();
-
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, java.io.IOException e) {
-                runOnUiThread(() -> tvStatus.setText("Upload failed"));
+        bg.execute(() -> {
+            final byte[] imageBytes;
+            try {
+                imageBytes = readBytes(imageUri);
+            } catch (Exception e) {
+                runOnUiThread(() -> {
+                    tvStatus.setText("Failed to read image");
+                    btnUploadNow.setEnabled(true);
+                });
+                return;
             }
 
-            @Override
-            public void onResponse(Call call, Response response) {
-                try {
-                    if (!response.isSuccessful()) {
-                        runOnUiThread(() -> tvStatus.setText("Server error"));
-                        return;
-                    }
-                    runOnUiThread(() -> tvStatus.setText("Upload success"));
-                } finally {
-                    response.close();
+            String mime = getContentResolver().getType(imageUri);
+            if (mime == null) mime = "image/jpeg";
+
+            RequestBody fileBody = RequestBody.create(imageBytes, MediaType.parse(mime));
+
+            MultipartBody requestBody = new MultipartBody.Builder()
+                    .setType(MultipartBody.FORM)
+                    .addFormDataPart("file", "upload", fileBody)
+                    .addFormDataPart("payload", payload)
+                    .addFormDataPart("step", "30")
+                    .addFormDataPart("key", "")
+                    .build();
+
+            Request request = new Request.Builder()
+                    .url(SERVER_PROCESS_URL)
+                    .post(requestBody)
+                    .build();
+
+            client.newCall(request).enqueue(new Callback() {
+                @Override
+                public void onFailure(Call call, java.io.IOException e) {
+                    runOnUiThread(() -> {
+                        tvStatus.setText("Upload failed: " + e.getMessage());
+                        btnUploadNow.setEnabled(true);
+                    });
                 }
-            }
+
+                @Override
+                public void onResponse(Call call, Response response) {
+                    final int code = response.code();
+                    final boolean success = response.isSuccessful();
+                    final String contentType = response.header("Content-Type", "");
+
+                    try {
+                        if (!success) {
+                            final String err = response.body() != null ? response.body().string() : "";
+                            response.close();
+                            runOnUiThread(() -> {
+                                tvStatus.setText("Server error: " + code + (err.isEmpty() ? "" : ("\n" + err)));
+                                btnUploadNow.setEnabled(true);
+                            });
+                            return;
+                        }
+
+                        if (contentType.startsWith("image/")) {
+                            final byte[] bytes = response.body() != null ? response.body().bytes() : new byte[0];
+                            response.close();
+
+                            final Uri saved = saveToCache(bytes, "processed.jpg");
+
+                            runOnUiThread(() -> {
+                                tvStatus.setText("Upload success");
+                                if (saved != null) {
+                                    imgPreview.setImageURI(saved);
+                                }
+                                btnUploadNow.setEnabled(true);
+                            });
+                            return;
+                        }
+
+                        final String body = response.body() != null ? response.body().string() : "";
+                        response.close();
+
+                        runOnUiThread(() -> {
+                            tvStatus.setText(body.isEmpty() ? "Upload success" : body);
+                            btnUploadNow.setEnabled(true);
+                        });
+
+                    } catch (Exception e) {
+                        response.close();
+                        runOnUiThread(() -> {
+                            tvStatus.setText(success ? "Upload success" : ("Server error: " + code));
+                            btnUploadNow.setEnabled(true);
+                        });
+                    }
+                }
+            });
         });
+    }
+
+    private Uri saveToCache(byte[] data, String fileName) {
+        try {
+            File f = new File(getCacheDir(), fileName);
+            try (FileOutputStream fos = new FileOutputStream(f)) {
+                fos.write(data);
+            }
+            return Uri.fromFile(f);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     private byte[] readBytes(Uri uri) throws Exception {
         try (InputStream is = getContentResolver().openInputStream(uri);
              ByteArrayOutputStream buffer = new ByteArrayOutputStream()) {
 
-            if (is == null) throw new Exception();
+            if (is == null) throw new Exception("InputStream is null");
 
             byte[] data = new byte[8192];
             int n;

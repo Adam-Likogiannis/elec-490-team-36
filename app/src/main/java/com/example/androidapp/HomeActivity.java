@@ -3,7 +3,6 @@ package com.example.androidapp;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.widget.Button;
 import android.widget.Toast;
 
@@ -13,6 +12,7 @@ import androidx.activity.result.contract.ActivityResultContracts;
 
 public class HomeActivity extends ComponentActivity {
 
+    private ActivityResultLauncher<Intent> pickImageForView;
     private ActivityResultLauncher<String> pickImageForUpload;
 
     @Override
@@ -25,15 +25,37 @@ public class HomeActivity extends ComponentActivity {
         Button btnUpload = findViewById(R.id.btnUpload);
         Button btnDownload = findViewById(R.id.btnDownload);
 
+        pickImageForView = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() != RESULT_OK || result.getData() == null) {
+                        return;
+                    }
+                    Uri uri = result.getData().getData();
+                    if (uri == null) {
+                        return;
+                    }
+
+                    Intent viewIntent = new Intent(Intent.ACTION_VIEW);
+                    viewIntent.setDataAndType(uri, "image/*");
+                    viewIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+                    try {
+                        startActivity(viewIntent);
+                    } catch (Exception ignored) {
+                    }
+                }
+        );
+
         pickImageForUpload = registerForActivityResult(
                 new ActivityResultContracts.GetContent(),
                 uri -> {
                     if (uri == null) {
-                        Toast.makeText(this, "No image selected", Toast.LENGTH_SHORT).show();
                         return;
                     }
                     Intent intent = new Intent(this, UploadActivity.class);
                     intent.setData(uri);
+                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                     startActivity(intent);
                 }
         );
@@ -44,12 +66,9 @@ public class HomeActivity extends ComponentActivity {
         });
 
         btnGallery.setOnClickListener(v -> {
-            Intent intent = new Intent(Intent.ACTION_VIEW, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-            try {
-                startActivity(intent);
-            } catch (Exception e) {
-                Toast.makeText(this, "No gallery app found", Toast.LENGTH_SHORT).show();
-            }
+            Intent pickIntent = new Intent(Intent.ACTION_PICK);
+            pickIntent.setType("image/*");
+            pickImageForView.launch(pickIntent);
         });
 
         btnUpload.setOnClickListener(v -> pickImageForUpload.launch("image/*"));

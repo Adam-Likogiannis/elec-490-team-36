@@ -56,7 +56,7 @@ public class MainActivity extends ComponentActivity {
         previewView = findViewById(R.id.previewView);
         btnCapture = findViewById(R.id.btnCapture);
         btnSwitch = findViewById(R.id.btnSwitch);
-        btnBack = findViewById(R.id.btnBack);
+
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
                 == PackageManager.PERMISSION_GRANTED) {
@@ -76,11 +76,7 @@ public class MainActivity extends ComponentActivity {
         });
 
 
-        btnBack.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, HomeActivity.class);
-            startActivity(intent);
-            finish();
-        });
+
     }
 
     private void startCamera() {

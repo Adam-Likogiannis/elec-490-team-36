@@ -23,22 +23,10 @@
         android:orientation="horizontal"
         android:gravity="center"
         android:padding="16dp"
+        android:layout_marginBottom="28dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
-
-
-        <ImageButton
-            android:id="@+id/btnBack"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_marginEnd="24dp"
-            android:background="@android:color/transparent"
-            android:padding="8dp"
-            android:scaleType="centerInside"
-            android:src="@drawable/ic_back"
-            android:tint="@android:color/black"
-            android:contentDescription="@string/back_button" />
 
 
         <Button

@@ -58,21 +58,11 @@
         android:layout_marginTop="12dp" />
 
     <TextView
-        android:id="@+id/tvAddress"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="@string/label_address"
-        app:layout_constraintTop_toBottomOf="@id/tvCapturedTime"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="8dp" />
-
-    <TextView
         android:id="@+id/tvUsername"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="@string/label_username"
-        app:layout_constraintTop_toBottomOf="@id/tvAddress"
+        app:layout_constraintTop_toBottomOf="@id/tvCapturedTime"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="8dp" />
