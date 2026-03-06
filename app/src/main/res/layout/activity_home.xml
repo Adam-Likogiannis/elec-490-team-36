@@ -3,34 +3,65 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:gravity="center"
     android:padding="24dp"
-    android:gravity="center">
+    android:background="#F5F6FA">
 
+    <!-- Title -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Watermark Studio"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:textColor="#222222"
+        android:layout_marginBottom="40dp"/>
+
+    <!-- OPEN CAMERA -->
     <Button
         android:id="@+id/btnCamera"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Open Camera" />
+        android:layout_height="60dp"
+        android:text="OPEN CAMERA"
+        android:textColor="#FFFFFF"
+        android:textStyle="bold"
+        android:backgroundTint="#6C63FF"
+        android:elevation="6dp"
+        android:layout_marginBottom="12dp"/>
 
+    <!-- VIEW GALLERY -->
     <Button
         android:id="@+id/btnGallery"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="View Gallery"
-        android:layout_marginTop="16dp" />
+        android:layout_height="60dp"
+        android:text="VIEW GALLERY"
+        android:textColor="#FFFFFF"
+        android:textStyle="bold"
+        android:backgroundTint="#4CAF50"
+        android:elevation="6dp"
+        android:layout_marginBottom="12dp"/>
 
+    <!-- UPLOAD -->
     <Button
         android:id="@+id/btnUpload"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Upload Images to Server"
-        android:layout_marginTop="16dp" />
+        android:layout_height="60dp"
+        android:text="UPLOAD IMAGES TO SERVER"
+        android:textColor="#FFFFFF"
+        android:textStyle="bold"
+        android:backgroundTint="#1F1F1F"
+        android:elevation="6dp"
+        android:layout_marginBottom="12dp"/>
 
+    <!-- DECODE -->
     <Button
         android:id="@+id/btnDownload"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Decode Watermarked Images"
-        android:layout_marginTop="16dp" />
+        android:layout_height="60dp"
+        android:text="DECODE WATERMARKED IMAGES"
+        android:textColor="#FFFFFF"
+        android:textStyle="bold"
+        android:backgroundTint="#3F51B5"
+        android:elevation="6dp"/>
 
 </LinearLayout>

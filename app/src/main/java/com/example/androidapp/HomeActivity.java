@@ -73,8 +73,9 @@ public class HomeActivity extends ComponentActivity {
 
         btnUpload.setOnClickListener(v -> pickImageForUpload.launch("image/*"));
 
-        btnDownload.setOnClickListener(v ->
-                Toast.makeText(this, "Decode coming soon", Toast.LENGTH_SHORT).show()
-        );
+        btnDownload.setOnClickListener(v -> {
+            Intent intent = new Intent(this, DecodeUploadActivity.class);
+            startActivity(intent);
+        });
     }
 }
