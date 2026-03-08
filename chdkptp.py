@@ -3,10 +3,15 @@ import keyboard
 import time
 import pyperclip
 from pathlib import Path
+import modify_image
+import embed_new
 
 fill_console = True
-cli_coordinate = [1001, 1090]
-last_line_coordinate = [634, 1010, 1049, 1010]#994
+#cli_coordinate = [1001, 1090]
+#last_line_coordinate = [634, 1015, 1049, 1015]#994
+cli_coordinate = [18, 1400]
+last_line_coordinate = [20, 1338]
+
 device_details = ""
 upload_file_name = "IMG_0559"
 temp_directory = "./Images"
@@ -16,8 +21,12 @@ message = "HI"
 uploading = False
 model = "Canon PowerShot A800"
 cameraTime = ""
+turn_RED = False
 
 def activate_camera_code():
+    pyautogui.click(1001, 1090)
+    time.sleep(1)
+    pyautogui.hotkey("win", "up")
     pyautogui.typewrite("rec")
     time.sleep(0.1)
     pyautogui.press('enter')
@@ -36,7 +45,11 @@ def fill_the_console():
         activate_camera_code()
         
         pyautogui.typewrite("help")
+        #time.sleep(0.1)
+        pyautogui.press('enter')
         time.sleep(0.1)
+        pyautogui.typewrite("help")
+        #time.sleep(0.1)
         pyautogui.press('enter')
         fill_console = False
         time.sleep(0.1)
@@ -48,11 +61,38 @@ def run_getm():
     #time.sleep(0.5)
     time.sleep(0.1)
 
-def get_edited_image():
+def watermark_image(message, inputpath, outputpath):
+    step = 30
+    key = ""
+    quality = 100
+    embed_new.apply_watermark_to_camera_image(message, step, key, inputpath, outputpath, quality)
+
+def decode_image(inputpath):
+    step = 30
+    key = ""
+    message = embed_new.decode_image(inputpath, step, key) 
+    print_message = 'lua print("Image Saved: ' + message + '")'
+    #print(print_message)
+    #time.sleep(0.1)
+    #pyautogui.click(cli_coordinate[0], cli_coordinate[1])
+    #pyautogui.typewrite(message)
+    #pyautogui.press('enter')
+
+def get_edited_image(cameraTime):
     for p in Path(temp_directory).rglob('*'):
         if p.is_file():
             file_name = p.name
             print(file_name)
+            if turn_RED == True:
+                t = temp_directory + "/" + file_name
+                modify_image.adjust_red_channel(t, 0.1, file_name)
+            else:
+                message = "Canon PowerShot A800 - " + p.name + " - " + cameraTime
+                inputpath = temp_directory + "/" + file_name
+                outputpath = inputpath
+                #watermark_image(message, inputpath, "./temp/" + file_name)
+
+                watermark_image(message, inputpath, outputpath)
             
             upload_image(file_name)
             
@@ -81,10 +121,15 @@ def run_remoteshoot():
     time.sleep(0.1)
     pyautogui.click(last_line_coordinate[0], last_line_coordinate[1])
     pyautogui.hotkey("ctrlleft", "end")
-    time.sleep(0.1)
-    pyautogui.click(last_line_coordinate[0], last_line_coordinate[1])
-    pyautogui.moveTo(last_line_coordinate[0], last_line_coordinate[1], 0)
-    pyautogui.dragRel(400, 0, 0.1)
+    time.sleep(0.3)
+
+    pyautogui.click(last_line_coordinate[0], last_line_coordinate[1], clicks=3,interval=0.1,button="left")
+
+   # pyautogui.click(last_line_coordinate[0], last_line_coordinate[1])
+   # pyautogui.moveTo(last_line_coordinate[0], last_line_coordinate[1], 0)
+   # pyautogui.dragRel(400, 0, 0.1)
+
+
     pyautogui.hotkey("ctrlleft", "c")
     cameraTime = pyperclip.paste()
     print(cameraTime)
@@ -93,10 +138,13 @@ def run_remoteshoot():
     pyautogui.click(cli_coordinate[0], cli_coordinate[1])
     pyautogui.typewrite("rs Images/ -jpg")
     pyautogui.press('enter')
-    
+
+
     time.sleep(6)
+
+    
     print("uploading")
-    get_edited_image()
+    get_edited_image(cameraTime)
     
 
 # get result of getm from bottom line of the console
@@ -105,13 +153,17 @@ def get_getm_output():
     pyautogui.click(last_line_coordinate[0], last_line_coordinate[1])
     #time.sleep(0.1)
     pyautogui.hotkey("ctrlleft", "end")
-    time.sleep(0.1)
+    time.sleep(0.3)
+    pyautogui.click(last_line_coordinate[0], last_line_coordinate[1], clicks=3,interval=0.1,button="left")
+
+    """
     pyautogui.click(last_line_coordinate[0], last_line_coordinate[1])
-    #time.sleep(0.1)
+    time.sleep(0.1)
     pyautogui.moveTo(last_line_coordinate[0], last_line_coordinate[1], 0)
     #time.sleep(0.1)
     pyautogui.dragRel(400, 0, 0.1)
     #time.sleep(0.1)
+"""
     pyautogui.hotkey("ctrlleft", "c")
     time.sleep(0.1)
     
@@ -152,18 +204,15 @@ def get_message_from_camera():
 
 
 def main():
+    #decode_image("./Old_Images/IMG_0611.jpg")
+    #return
 
     global uploading
     while True:
 
-        if keyboard.is_pressed('q'):
+        if keyboard.is_pressed('esc'):
             print("Quitting")
             break
-        #if keyboard.is_pressed("u") and uploading == False:
-        #    uploading = True
-        #    upload_image()
-            
-            
 
         current_pos = pyautogui.position() 
         print(f"Current position: X={current_pos.x}, Y={current_pos.y}")
@@ -176,12 +225,3 @@ if __name__ == "__main__":
 
 
 
-"""
-Need to speed up getting command from command line stuff
-Need to change it to save photo in Images directory in the folder
-Need it to read from that fodler, get the new image, and call a function
-Function just prints something and waits 1 second
-Need it to upload iamge to camera
-Then move the image into old images directory
-then start checking again
-"""
