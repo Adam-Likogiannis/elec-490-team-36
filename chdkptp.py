@@ -9,7 +9,14 @@ import embed_new
 fill_console = True
 #cli_coordinate = [1001, 1090]
 #last_line_coordinate = [634, 1015, 1049, 1015]#994
+
+# FOR ADAM
+# This is the cooridnate on the screen where the mouse needs to be to
+# click the command line interface
 cli_coordinate = [18, 1400]
+# This is the cooridnate on the screen where the mouse needs to be to
+# click the most recent output in the terminal.
+# Both of these cooridantes were taken when the program is full screened. Done for consitency.
 last_line_coordinate = [20, 1338]
 
 device_details = ""
@@ -23,6 +30,7 @@ model = "Canon PowerShot A800"
 cameraTime = ""
 turn_RED = False
 
+# full screens chdkptp and sets the camera to record mode.
 def activate_camera_code():
     pyautogui.click(1001, 1090)
     time.sleep(1)
@@ -31,11 +39,7 @@ def activate_camera_code():
     time.sleep(0.1)
     pyautogui.press('enter')
     time.sleep(3)
-
-    #pyautogui.typewrite("lua dofile(\"A/CHDK/SCRIPTS/SavePhoto.lua\")")
-    #time.sleep(0.1)
-    #pyautogui.press('enter')
-    #time.sleep(0.1)
+    
     
 # fill the console to push ouputs to the bottom of the screen
 def fill_the_console():
@@ -54,6 +58,7 @@ def fill_the_console():
         fill_console = False
         time.sleep(0.1)
 
+# this is the command that gets messages from the camera
 def run_getm():
     pyautogui.typewrite("getm")
     #time.sleep(0.1)
@@ -61,12 +66,15 @@ def run_getm():
     #time.sleep(0.5)
     time.sleep(0.1)
 
+# runs the watermark code. The step, key, and quailty values were the defualt values
+# in the original code
 def watermark_image(message, inputpath, outputpath):
     step = 30
     key = ""
     quality = 100
     embed_new.apply_watermark_to_camera_image(message, step, key, inputpath, outputpath, quality)
 
+# decodes the input image. 
 def decode_image(inputpath):
     step = 30
     key = ""
@@ -222,6 +230,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-
